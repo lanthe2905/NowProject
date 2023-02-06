@@ -1,13 +1,11 @@
-from app.model.db import foodPlacesCollection, foodCategoryLangsCollection, foodCategoriesCollection
-from app.model.model import FoodPlaces, Users, FoodCategories, FoodCategoriesLangs
+from app.model.db import foodPlacesCollection
+from app.model.model import FoodPlaces, Users
 from bson.objectid import ObjectId
 from app.util.helpers import _throw
 from app.util.jwt import get_current_user
 from app.util.exception import NotPermissionException, NotFoundDataException
-from app.service.food_type_and_style_service import FoodTypeAndStyleService
 from app.util.file  import remove_file
 from flask import request
-import json, os
 class FoodPlaceService:
     @staticmethod
     def get_lists(page= 1, page_size = 30):

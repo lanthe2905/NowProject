@@ -1,10 +1,11 @@
 
 from flask_restx import abort
-import json
-import bleach
 from app.util.const import Const
 from app.util.exception import DuplicateDataException,NotFoundDataException,NotPermissionException, UnauthorizedException, UnprocessableException
 from werkzeug.http import HTTP_STATUS_CODES
+from pydantic import ValidationError
+from flask import make_response
+import json, bleach
 
 def _throw(exception):
     exceptionType = type(exception)
@@ -97,3 +98,11 @@ def _un_processable_abort(mess):
         'message': f"{HTTP_STATUS_CODES[422]}: {mess}",
     }
     abort(422, **error)
+
+def _validation_exception(exception: ValidationError):
+    error = {
+        'statusCode': 403,
+        'errors': exception.errors(),
+        'message': 'validation errors'
+    }
+    return make_response(error, 403)

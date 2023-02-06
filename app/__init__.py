@@ -26,7 +26,7 @@ api.add_namespace(user_namespace,path='/user')
 api.add_namespace(food_place_namespace, path="/food_place")
 api.add_namespace(delivery_namespace, path="/delivery")
 api.add_namespace(category_namespace,path="/category")
-api.add_namespace(food_type_style,path="/category")
+api.add_namespace(food_type_style,path="/food_type_style")
 
 def create_app(name="default"):
     app = Flask(name, static_folder="app/static")

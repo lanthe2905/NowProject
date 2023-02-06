@@ -131,7 +131,7 @@ class FoodTypeAndStyles(GenericModel):
     styles: Optional[str]
     goodFor: Optional[str]
     standFoods: Optional[Text]
-    capacity: Optional[PydanticObjectId] 
+    capacity: Optional[int] 
     lastAdminssionTime: Optional[Text]
     preparationTime: Optional[Text]
     holiday: Optional[Text]
