@@ -17,7 +17,6 @@ class GetFoodTypeAndStyleController(Resource):
     def get(self, id):
         try:
             food_style = FoodTypeAndStyleService.get_by_id(id)
-            print(food_style)
             return _success(inspect.stack(), food_style)
         except Exception as e:
             _throw(e)
@@ -38,12 +37,25 @@ class FoodTypeAndStyleController(Resource):
 
 @api.route('/update/<id>')
 class FoodTypeAndStyleUpdate(Resource):
-    # @jwt_required
+    @jwt_required()
     @api.expect(_foodTypeAndStyleField)
-    def post(self):
-        pass
+    def post(self, id):
+        try:
+            payload = request.get_json()
+            return _success(inspect.stack(), FoodTypeAndStyleService.update(id, payload= payload))
+        except ValidationError as e:
+            return  _validation_exception(e)
+        except Exception as e:
+            _throw(e)
+
 
 @api.route('/delete/<id>')
 class DeleteFoodTypeAndStyle(Resource):
-    def get(self):
-        pass
+    @jwt_required()
+    def get(self, id):
+        try:
+            return _success(inspect.stack(), FoodTypeAndStyleService.delete(id))
+        except ValidationError as e:
+            return  _validation_exception(e)
+        except Exception as e:
+            _throw(e)

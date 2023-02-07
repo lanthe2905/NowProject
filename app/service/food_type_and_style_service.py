@@ -63,27 +63,27 @@ class FoodTypeAndStyleService:
     @staticmethod 
     def update(id, payload):
         food_type = FoodTypeAndStyleService.get_by_id(id)
-       
-        if food_type is not None: 
-            food_type_model = FoodTypeAndStyles( {**food_type, **payload})
-            FoodTypeAndStyleService.assert_food_type(food_type= food_type, check_auth= True)
+    
+        food_type_model = FoodTypeAndStyles( **{**food_type, **payload})
+        FoodTypeAndStyleService.assert_food_type(food_type= food_type_model, check_auth= True)
 
-            foodTypeAndStylesCollection.update_one({"_id": ObjectId(payload['id'])}, {
-                "$set": food_type_model.to_bson()
-            })
 
-            if 'description' in payload or 'recommendation' in payload :
-                if food_type['langs']: 
-                    for food_style_lang in food_type['langs']:
-                        if request.cookies.get("lang") is food_style_lang['lang']:
-                            food_style_lang = FoodTypeAndStyleLangs(**{**food_style_lang, **payload})
-                            FoodTypeAndStyleLangService.update(food_style_lang.id,  food_style_lang.to_bson())
-                else:
-                    food_style_lang_model = FoodTypeAndStyleLangs(**payload)
-                    FoodTypeAndStyleLangService.create(food_style_lang_model.to_bson())
+        foodTypeAndStylesCollection.update_one({"_id": ObjectId(id)}, {
+            "$set": food_type_model.to_bson()
+        })
 
-            return  FoodTypeAndStyleService.get_by_id(id)
-        else: return False
+        if 'description' in payload or 'recommendation' in payload :
+            if food_type['langs']: 
+                for food_style_lang in food_type['langs']:
+                    if request.cookies.get("lang") == food_style_lang['lang']:
+                        # print(food_style_lang)
+                        food_style_lang = FoodTypeAndStyleLangs(**{**food_style_lang, **payload})
+                        FoodTypeAndStyleLangService.update(food_style_lang.id,  food_style_lang.to_bson())
+            else:
+                food_style_lang_model = FoodTypeAndStyleLangs(**payload)
+                FoodTypeAndStyleLangService.create(food_style_lang_model.to_bson())
+
+        return  FoodTypeAndStyleService.get_by_id(id)
     
     @staticmethod
     def delete(id):
@@ -92,6 +92,8 @@ class FoodTypeAndStyleService:
 
         if food_type['langs']: 
              for food_style_lang in food_type['langs']:
+                if "_id" not in food_style_lang:
+                    raise NotFoundDataException("Error...")
                 FoodTypeAndStyleLangService.delete(food_style_lang['_id'])
 
       
