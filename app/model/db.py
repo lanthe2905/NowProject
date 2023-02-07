@@ -1,9 +1,10 @@
 from pymongo import MongoClient
 from flask_pymongo import PyMongo
-
-client = MongoClient('localhost', 27017)
+import os 
+from dotenv import load_dotenv
+load_dotenv()
+client = MongoClient(os.getenv("MONGO"))
 mongo = PyMongo()
-
 db = client.Now
 userCollection = db.users
 foodDrinksCollection = db.foodDrinks

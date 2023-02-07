@@ -36,8 +36,11 @@ class Login(Resource):
 class Register(Resource):
     @api.expect(_resp)
     def post(self):
-        data = request.get_json()
-        return _success(inspect.stack(), UserService.register(data))
+        try:
+            data = request.get_json()
+            return _success(inspect.stack(), UserService.register(data))
+        except Exception as e:
+            _throw(e)
 
 @api.route('/getUserById/<id>')
 @api.doc(params={'id': 'user id'})
