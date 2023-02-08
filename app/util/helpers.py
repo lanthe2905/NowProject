@@ -19,6 +19,8 @@ def _throw(exception):
         _un_authorized_abort(exception.message)
     elif exceptionType == UnprocessableException:
         _un_processable_abort(exception.message)
+    elif exceptionType == AttributeError:
+        _error_abort("error...")
     else:
         _error_abort(str(exception))
 

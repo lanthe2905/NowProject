@@ -8,17 +8,25 @@ class FoodTypeAndStyleLangService:
 
     @staticmethod
     def create(payload):
-        is_success = foodTypeAndStyleLangsCollection.insert_one(payload).acknowledged
-        if is_success is True:
+        result = foodTypeAndStyleLangsCollection.insert_one(payload)
+        if result.inserted_id is not None:
             return payload
-        raise Exception("Can't create food type langs") 
+            
+        return {"message": "created successfully", "code": 200, "data": FoodTypeAndStyleLangService.get_by_id(result.inserted_id)}
 
     @staticmethod
     def update(id, payload):
-        return foodTypeAndStyleLangsCollection.update_one({"_id": ObjectId(id)}, {
+        result =  foodTypeAndStyleLangsCollection.update_one({"_id": ObjectId(id)}, {
             "$set": payload
         })
+        if result.matched_count == 0:
+            return {"message": "Updated failed", "code": 400}
+        return {"message":"updated successfully", "code": 200, "data": FoodTypeAndStyleLangService.get_by_id(id)}
     
     @staticmethod
     def delete(id):
-        return foodTypeAndStyleLangsCollection.delete_one({"_id": ObjectId(id)}).acknowledged
+        result =  foodTypeAndStyleLangsCollection.delete_one({"_id": ObjectId(id)})
+        if result.deleted_count == 0 :
+            return {"message": "deleted not success", "code": 400}
+        return {"message": "delete success", "code": 200}
+        

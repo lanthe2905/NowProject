@@ -1,26 +1,26 @@
-from app.model.model import FoodCategories, FoodCategoriesLangs, Users, FoodPlaces
-from app.model.db import foodCategoryLangsCollection,foodCategoriesCollection
-from .food_service import FoodPlaceService
+from app.model.model import FoodCategories, Users, FoodPlaces
+from app.model.db import foodCategoryLangsCollection,foodCategoriesCollection, foodPlacesCollection
 from bson.objectid import ObjectId
 from app.util.helpers import _throw
-from app.util.exception import NotFoundDataException
+from app.util.exception import DataNotExistsException, NotPermissionException
+from app.util.jwt import get_current_user
 class FoodCategoryService: 
 
     @staticmethod
     def create(payload):
         for lang in payload['categoryLangs']:
-            foodCategoryID = foodCategoriesCollection.insert_one({
+            food_category_id = foodCategoriesCollection.insert_one({
                 "foodPlaceID":  ObjectId(payload['foodPlaceID'])
             }).inserted_id
 
-            if "vn" in lang is not None and lang['vn'] != ""  : 
-                FoodCategoryService.save_to_db(lang['vn'], foodCategoryID, 'vn')
+            if "vn" in lang  and lang['vn'] != ""  : 
+                FoodCategoryService.save_to_db(lang['vn'], food_category_id, 'vn')
                 
-            if "en" in lang is not None and lang['en'] != "": 
-                FoodCategoryService.save_to_db(lang['en'], foodCategoryID, 'en')
+            if "en" in lang  and lang['en'] != "": 
+                FoodCategoryService.save_to_db(lang['en'], food_category_id, 'en')
                 
             # cteLang = FoodCategoriesLangs(**lang)
-        return {"message": "save category success!"}
+        return {"message": "save category success!", "code": 200, "data": FoodCategoryService.get_by_id(food_category_id)}
      
     @staticmethod
     def save_to_db(name, foodCategoryID,lang = "vn"):
@@ -33,8 +33,11 @@ class FoodCategoryService:
     @staticmethod
     def update(payload):
         category = FoodCategoryService.get_by_id(ObjectId(payload['foodCategoryID']))
+        if "_id" not in  category: return {"message": "data not valid", "code": 404}
+
         category:FoodCategories = FoodCategories(**category)
-        #FoodCategoryService.assertCategory(category=category)
+        FoodCategoryService.assert_category(category=category, check_auth= True)
+
         if payload['categoryLangs']['vn'] != '' and payload['categoryLangs']['vn']  is not  None:
             foodCategoryLangsCollection.update_one({
                 "lang": "vn",
@@ -53,23 +56,48 @@ class FoodCategoryService:
                     "categoryName": payload['categoryLangs']['en']
                 }
             })
-        return True
+        return {"message": "updated success","data":FoodCategoryService.get_by_id(category.id), "code": 200}
 
     
     @staticmethod
     def get_by_id(id):
-        return foodCategoriesCollection.find_one(id)
+        food_category = foodCategoriesCollection.aggregate(
+           [
+             {"$match": { "_id": ObjectId(id)}},
+             {
+                "$lookup": {
+                    "from": "foodCategoryLangs",
+                    "localField": "_id",
+                    "foreignField": "foodCategoryID",
+                    "as": "categoryLangs"
+                }
+             }
+           ])
+        return dict(food_category.next()) if food_category._has_next() else {}
 
     @staticmethod
-    def assert_category(category: FoodCategories):
-        if not category : _throw(NotFoundDataException("can't find category"))
-
-        foodPlace = FoodPlaceService.get_by_id(category.foodPlaceID)
-        FoodPlaceService.assertFoodPlace(FoodPlaces(**foodPlace))
+    def assert_category(category: FoodCategories, check_auth= True):
+        if not category : _throw(DataNotExistsException("can't find category"))
+        user: Users = get_current_user()
+        food_place = foodPlacesCollection.find_one(category.foodPlaceID)
+        food_place = FoodPlaces(**food_place)
+        if food_place is None:
+            raise DataNotExistsException("Can't find food place")
+        if check_auth is True:
+            if food_place.userID != user.id:
+                raise NotPermissionException("not permission")
+        # foodPlace = FoodPlaceService.get_by_id(category.foodPlaceID)
 
     @staticmethod
     def delete_by_id(id):
         category = FoodCategoryService.get_by_id(id)
-        FoodCategoryService.assertCategory(category= category)
-
-        return foodCategoriesCollection.delete_one(id)
+        if "_id" not in category: return {'message': "cant find data", "code": 400}
+        category = FoodCategories(**category)
+        FoodCategoryService.assert_category(category= category, check_auth= True)
+        if "categoryLangs" in category:
+            for categoryLang in category['categoryLangs']:
+                foodCategoryLangsCollection.delete_one(categoryLang['_id'])
+        result = foodCategoriesCollection.delete_one({"_id": ObjectId(category.id)})
+        if result.deleted_count < 0:
+            return {"message": "cant delete data", "code": 400}
+        return {'message': "deleted successfully!", "code": 200}

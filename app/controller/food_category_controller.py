@@ -27,6 +27,7 @@ class CreateCategory(Resource):
 @api.route('/update')
 @api.expect(FoodCategoryDto.category_update_form)
 class UpdateCategory(Resource):
+    @jwt_required()
     def post(self):
         try:
             payload = request.get_json()
@@ -37,8 +38,14 @@ class UpdateCategory(Resource):
 @api.route('/delete/<id>')
 @api.doc(security="Bearer")
 class DeleteCategory(Resource):
-    def post(self, id):
+    @jwt_required()
+    def get(self, id):
         try:
             return _success(inspect.stack(), FoodCategoryService.delete_by_id(id))
         except Exception as e: 
             _throw(e)
+
+@api.route('/get_by_id/<id>')
+class GetCategoryByID(Resource):
+    def get(self, id):
+        return _success(inspect.stack(), FoodCategoryService.get_by_id(id))
