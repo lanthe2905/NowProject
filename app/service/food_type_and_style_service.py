@@ -44,7 +44,7 @@ class FoodTypeAndStyleService:
 
         food_type_style_id = foodTypeAndStylesCollection.insert_one(food_type.to_bson()).inserted_id
         if food_type_style_id is None: 
-            return {"message": "Data not valid", "code": 400}
+            return {"message": "Data not valid", "status": 400}
 
         if 'description' in food_type_lang or 'recommendation' in food_type_lang :
             food_type_lang['foodTyleAndStyleID'] = food_type_style_id
@@ -53,7 +53,7 @@ class FoodTypeAndStyleService:
             FoodTypeAndStyleLangService.create(food_type_lang.to_bson())
             
 
-        return {"message": "create successfully", "code": 200, "data": FoodTypeAndStyleService.get_by_id(food_type_style_id)}
+        return {"message": "create successfully", "status": 200, "data": FoodTypeAndStyleService.get_by_id(food_type_style_id)}
 
 
     @staticmethod 
@@ -62,7 +62,7 @@ class FoodTypeAndStyleService:
         food_type_model = FoodTypeAndStyles( **{**food_type, **payload})
 
         if food_type_model.id is None:
-            return {"message": "Data not valid", "code": 400}
+            return {"message": "Data not valid", "status": 400}
 
         FoodTypeAndStyleService.assert_food_type(food_type= food_type_model, check_auth= True)
 
@@ -80,13 +80,13 @@ class FoodTypeAndStyleService:
                 food_style_lang_model = FoodTypeAndStyleLangs(**payload)
                 FoodTypeAndStyleLangService.create(food_style_lang_model.to_bson())
 
-        return {"message": "updated successfully!", "code": 200, "data": FoodTypeAndStyleService.get_by_id(id)} 
+        return {"message": "updated successfully!", "status": 200, "data": FoodTypeAndStyleService.get_by_id(id)} 
     
     @staticmethod
     def delete(id):
         food_type = FoodTypeAndStyleService.get_by_id(id)
 
-        if "_id" not in food_type: return {"message": "data not valid", "code": 400}
+        if "_id" not in food_type: return {"message": "data not valid", "status": 400}
         FoodTypeAndStyleService.assert_food_type(food_type= FoodTypeAndStyles(**food_type), check_auth= True)
 
         if food_type['langs']: 
@@ -96,9 +96,9 @@ class FoodTypeAndStyleService:
       
         result = foodTypeAndStylesCollection.delete_one({"_id": ObjectId(id)})
         if result.deleted_count == 0: 
-            return {"message": "delete not success", "code": 400}
+            return {"message": "delete not success", "status": 400}
 
-        return {"message": "delete successfully!", "code": 200}
+        return {"message": "delete successfully!", "status": 200}
 
 
     @staticmethod

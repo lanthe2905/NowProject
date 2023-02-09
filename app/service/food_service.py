@@ -106,9 +106,9 @@ class FoodPlaceService:
 
         food = FoodPlaces(**payload)
 
-        inserted_id = foodPlacesCollection.insert_one(food.to_bson())
-        if inserted_id is None: return {"message": "Create not successfully", "code": 204}
-        return {"message": "create success", "data": FoodPlaceService.get_by_id(inserted_id), "code": 200}
+        result = foodPlacesCollection.insert_one(food.to_bson())
+        if result.inserted_id is None: return {"message": "Create not successfully", "status": 204}
+        return {"message": "create success", "data": FoodPlaceService.get_by_id(result.inserted_id), "status": 200}
 
 
     @staticmethod
@@ -131,9 +131,9 @@ class FoodPlaceService:
                 if "_id" in category: FoodCategoryService.delete_by_id(category['_id'])
         
         result = foodPlacesCollection.delete_one({"_id": ObjectId(id) })
-        if result.deleted_count == 0: return {"message": "delete not success!", "code": 204}
+        if result.deleted_count == 0: return {"message": "delete not success!", "status": 204}
         
-        return {"message": "delete success", "code": 200}
+        return {"message": "delete success", "status": 200}
 
 
     @staticmethod

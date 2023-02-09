@@ -20,7 +20,7 @@ class FoodCategoryService:
                 FoodCategoryService.save_to_db(lang['en'], food_category_id, 'en')
                 
             # cteLang = FoodCategoriesLangs(**lang)
-        return {"message": "save category success!", "code": 200, "data": FoodCategoryService.get_by_id(food_category_id)}
+        return {"message": "save category success!", "status": 200, "data": FoodCategoryService.get_by_id(food_category_id)}
      
     @staticmethod
     def save_to_db(name, foodCategoryID,lang = "vn"):
@@ -33,7 +33,7 @@ class FoodCategoryService:
     @staticmethod
     def update(payload):
         category = FoodCategoryService.get_by_id(ObjectId(payload['foodCategoryID']))
-        if "_id" not in  category: return {"message": "data not valid", "code": 404}
+        if "_id" not in  category: return {"message": "data not valid", "status": 404}
 
         category:FoodCategories = FoodCategories(**category)
         FoodCategoryService.assert_category(category=category, check_auth= True)
@@ -47,7 +47,7 @@ class FoodCategoryService:
                     "categoryName": payload['categoryLangs']['vn']
                 }
             })
-        elif payload['categoryLangs']['en'] != '' and payload['categoryLangs']['en']  is not None:
+        if payload['categoryLangs']['en'] != '' and payload['categoryLangs']['en']  is not None:
             foodCategoryLangsCollection.update_one({
                 "lang": "en",
                 "foodCategoryID": ObjectId(category.id)
@@ -56,7 +56,7 @@ class FoodCategoryService:
                     "categoryName": payload['categoryLangs']['en']
                 }
             })
-        return {"message": "updated success","data":FoodCategoryService.get_by_id(category.id), "code": 200}
+        return {"message": "updated success","data":FoodCategoryService.get_by_id(category.id), "status": 200}
 
     
     @staticmethod
@@ -91,13 +91,12 @@ class FoodCategoryService:
     @staticmethod
     def delete_by_id(id):
         category = FoodCategoryService.get_by_id(id)
-        if "_id" not in category: return {'message': "cant find data", "code": 400}
+        if "_id" not in category: return {'message': "cant find data", "status": 400}
         category = FoodCategories(**category)
         FoodCategoryService.assert_category(category= category, check_auth= True)
         if "categoryLangs" in category:
             for categoryLang in category['categoryLangs']:
                 foodCategoryLangsCollection.delete_one(categoryLang['_id'])
         result = foodCategoriesCollection.delete_one({"_id": ObjectId(category.id)})
-        if result.deleted_count < 0:
-            return {"message": "cant delete data", "code": 400}
-        return {'message': "deleted successfully!", "code": 200}
+      
+        return {'message': "deleted successfully!", "status": 200}
