@@ -4,21 +4,21 @@ from app.dto.food_place_dto import FoodPlaceDto
 from flask_restx import Resource
 from  ..service.food_service import FoodPlaceService
 from ..util.helpers import _success, _throw
-from flask import request
-import inspect, bson, json
+from flask import request, make_response
+import inspect
 from flask_jwt_extended import jwt_required
 from app.util.middleware import cookie_required
-from app.util.exception import  NotFoundDataException
 from app.util.file import save_file_local, remove_file
 from app.model.model import FoodPlaces
 api = FoodPlaceDto.api
 _foodFields= FoodPlaceDto.food_place_fields
+
 @api.route('/get_by_id/<id>')
 class FoodPlace(Resource):
     @cookie_required
     def get(self, id):
         try:
-            foodPlace = FoodPlaceService.get_by_id(id)
+            foodPlace = FoodPlaceService.get_by_id(id, required_lang= True)
             return  _success(inspect.stack(), foodPlace)
         except Exception as e:
             _throw(e)
@@ -58,9 +58,12 @@ class FoodCreate(Resource):
 
 @api.route('/delete/<id>')
 class FoodDelete(Resource):
-        @jwt_required()
-        def delete(self, id):
+    @jwt_required()
+    def delete(self, id):
+        try:
             return _success(inspect.stack(), FoodPlaceService.delete_by_id(id))
+        except Exception as e:
+            _throw(e)
 
 @api.route("/upload/<id>")
 class UploadImageFoodPlace(Resource):
@@ -91,14 +94,20 @@ class RemoveFile(Resource):
             food_place = FoodPlaceService.get_by_id(id= food_id)
             food_place = FoodPlaces(**food_place)
             FoodPlaceService.assert_food_place(food= food_place, check_auth= True)
+
+            if food_place.images is None: 
+                return _success(inspect.stack(), {"message": "You not have images", "code": 400})
+
             if name not in food_place.images:
-                raise NotFoundDataException("Not found image")
+                raise _success(inspect.stack(), {"message": "Images invalid", "code": 400})
+
             if remove_file(file_name= name):
                 if food_place.images is not None:
                     food_place.images.remove(name)
                     FoodPlaceService.update(id= food_id, payload= food_place.to_bson())
-                return _success(inspect.stack(), {"message": "Remove success!"})
+                    
+                return _success(inspect.stack(), {"message": "Remove success!", "code": 200})
             else: 
-                _throw(NotFoundDataException("Not found image"))
+                return _success(inspect.stack(), {"message": "Images not exist", "code": 400}) 
         except Exception as e:
             _throw(e)

@@ -2,7 +2,7 @@ from app.model.model import FoodCategories, Users, FoodPlaces
 from app.model.db import foodCategoryLangsCollection,foodCategoriesCollection, foodPlacesCollection
 from bson.objectid import ObjectId
 from app.util.helpers import _throw
-from app.util.exception import DataNotExistsException, NotPermissionException
+from app.util.exception import  NotPermissionException
 from app.util.jwt import get_current_user
 class FoodCategoryService: 
 
@@ -77,12 +77,12 @@ class FoodCategoryService:
 
     @staticmethod
     def assert_category(category: FoodCategories, check_auth= True):
-        if not category : _throw(DataNotExistsException("can't find category"))
+        if not category : _throw(Exception("can't find category"))
         user: Users = get_current_user()
         food_place = foodPlacesCollection.find_one(category.foodPlaceID)
         food_place = FoodPlaces(**food_place)
         if food_place is None:
-            raise DataNotExistsException("Can't find food place")
+            raise Exception("Can't find food place")
         if check_auth is True:
             if food_place.userID != user.id:
                 raise NotPermissionException("not permission")

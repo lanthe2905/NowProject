@@ -2,7 +2,7 @@ import requests
 import json 
 from app.model.db import foodPlacesCollection,foodCategoriesCollection, foodCategoryLangsCollection, foodTypeAndStylesCollection, foodTypeAndStyleLangsCollection, foodLocationsCollection
 from app.model.model import FoodPlaces,FoodCategories,FoodImages,FoodOpenTimes,FoodTypeAndStyleLangs, FoodTypeAndStyles, FoodLocations
-from app.util.time import stringToDate, timeToSecond
+from app.util.time import  time_to_second, string_to_date
 from craw.model.db import nowRawCollection
 from bson.objectid import ObjectId
 import traceback, os
@@ -22,49 +22,49 @@ class DeliveryService:
             "openTimes": None,
         }
         if delivery['operating'] is not None and delivery['operating']['status'] == 1: 
-            openTime = stringToDate(delivery['operating']['open_time'])
-            closeTime = stringToDate(delivery['operating']['close_time'])
+            openTime = string_to_date(delivery['operating']['open_time'])
+            closeTime = string_to_date(delivery['operating']['close_time'])
             openTimes = {
                     "MONDAY": [
                         {
-                            "OPEN": timeToSecond(openTime),
-                            "CLOSE": timeToSecond(closeTime)
+                            "OPEN": time_to_second(openTime),
+                            "CLOSE": time_to_second(closeTime)
                         } 
                     ],
                     "TUESDAY": [
                         {
-                            "OPEN": timeToSecond(openTime),
-                            "CLOSE": timeToSecond(closeTime)
+                            "OPEN": time_to_second(openTime),
+                            "CLOSE": time_to_second(closeTime)
                         } 
                     ],
                     "WEDNESDAY": [
                         {
-                            "OPEN": timeToSecond(openTime),
-                            "CLOSE": timeToSecond(closeTime)
+                            "OPEN": time_to_second(openTime),
+                            "CLOSE": time_to_second(closeTime)
                         } 
                     ],
                     "THURSDAY": [
                         {
-                            "OPEN": timeToSecond(openTime),
-                            "CLOSE": timeToSecond(closeTime)
+                            "OPEN": time_to_second(openTime),
+                            "CLOSE": time_to_second(closeTime)
                         } 
                     ],
                     "FRIDAY": [
                         {
-                            "OPEN": timeToSecond(openTime),
-                            "CLOSE": timeToSecond(closeTime)
+                            "OPEN": time_to_second(openTime),
+                            "CLOSE": time_to_second(closeTime)
                         } 
                     ],
                     "SATURDAY": [
                         {
-                            "OPEN": timeToSecond(openTime),
-                            "CLOSE": timeToSecond(closeTime)
+                            "OPEN": time_to_second(openTime),
+                            "CLOSE": time_to_second(closeTime)
                         } 
                     ],
                     "SUNDAY": [
                         {
-                            "OPEN": timeToSecond(openTime),
-                            "CLOSE": timeToSecond(closeTime)
+                            "OPEN": time_to_second(openTime),
+                            "CLOSE": time_to_second(closeTime)
                         } 
                     ]
                 }
@@ -80,7 +80,7 @@ class DeliveryService:
 
             foodCategoryLangsCollection.insert_one({
                 "foodCategoryID": id,
-                "lang": "vi",
+                "lang": "vn",
                 "categoryName": category
             })
 

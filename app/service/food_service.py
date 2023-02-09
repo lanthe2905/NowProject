@@ -151,7 +151,7 @@ class FoodPlaceService:
 
     @staticmethod
     def assert_food_place(food:FoodPlaces, check_auth = False):
-        if not food or food.id is None: raise(Exception("can't find food place"))
+        if food is None or food.id is None: raise(Exception("can't find food place"))
 
         if check_auth is True:
             user: Users = get_current_user()
