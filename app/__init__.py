@@ -7,6 +7,7 @@ from .controller.food_place_controller import api as food_place_namespace
 from .controller.delivery_controller import api as delivery_namespace
 from .controller.food_category_controller import api as category_namespace
 from .controller.food_types_and_style_controller import api as food_type_style
+from .controller.food_promotion_controller import api as food_promotion_namespace
 from app.util.exception import DuplicateDataException
 from app.util.jwt import get_exprive_time
 
@@ -27,7 +28,7 @@ api.add_namespace(food_place_namespace, path="/food_place")
 api.add_namespace(delivery_namespace, path="/delivery")
 api.add_namespace(category_namespace,path="/category")
 api.add_namespace(food_type_style,path="/food_type_style")
-
+api.add_namespace(food_promotion_namespace, path='/promotion')
 def create_app(name="default"):
     app = Flask(name, static_folder="app/static")
     app.config["MONGO_URI"] = "mongodb://localhost:27017/"
