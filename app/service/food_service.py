@@ -53,7 +53,7 @@ class FoodPlaceService:
                             },
                             {"$project": {"_id": 0, "categoryName": 1,"lang": 1}}
                         ],
-                        "as": "categoryLangs"
+                        "as": "langs"
                     }},
                     {"$project": {"_id": 1, "categoryLangs": 1}}
                 ],
@@ -92,6 +92,41 @@ class FoodPlaceService:
                         }
                     ],
                     "as": "foodTypeAndStyles"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "foodPromotions",
+                    "let": {"foodPlaceID": "$_id"},
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr": {
+                                    "$eq": ["$foodPlaceID", "$$foodPlaceID"]
+                                }
+                            }
+                        },
+                        {
+                            "$lookup": {
+                                "from": "foodPromotionLangs",
+                                "let": {"promotionID": "$_id"},
+                                "pipeline": [
+                                    {
+                                        "$match": {
+                                            "$expr": {
+                                                "$and": [
+                                                    {"$eq": ["$foodPromotionID", "$$promotionID"]}
+                                                ]
+                                                
+                                            }
+                                        }
+                                    }
+                                ],
+                                "as": "langs"
+                            }
+                        }
+                    ],
+                    "as": "promotions"
                 }
             }
 
