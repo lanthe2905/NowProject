@@ -1,7 +1,7 @@
 from app.model.model import Users, FoodPlaces, FoodPromotion, FoodPromotionLangs
 from app.model.db import  foodPlacesCollection, foodPromotionsCollection, foodPromotionLangsCollection
 from app.util.exception import  NotPermissionException
-from app.util.jwt import get_current_user
+from flask_jwt_extended import current_user
 from bson import ObjectId
 class FoodPromotionService: 
 
