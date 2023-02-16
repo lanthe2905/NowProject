@@ -58,11 +58,11 @@ class RefreshToken(Resource):
     def post(self):
         payload = request.payload
         user = UserService.get_by_id(payload['user_id'])
-
         if user is None: 
             return {"message": "Token not valid", "status": 403}, 200
-
-        refresh_token_redis = jwt_redis_blocklist.get(user['_id'])
+            
+        user['_id'] = str(user['_id'])
+        refresh_token_redis = jwt_redis_blocklist.get(user)
         if refresh_token_redis != refresh_token:
             return {"message": "Token not valid", "status": 403}, 200
 
