@@ -1,7 +1,7 @@
 from app.model.db import foodPlacesCollection
 from app.model.model import FoodPlaces, Users
 from bson.objectid import ObjectId
-from app.util.jwt import get_current_user
+from flask_jwt_extended import current_user
 from app.util.exception import NotPermissionException
 from app.service.food_type_and_style_service import FoodTypeAndStyleService
 from app.service.food_category_service import FoodCategoryService
@@ -189,7 +189,7 @@ class FoodPlaceService:
         if food is None or food.id is None: raise(Exception("can't find food place"))
 
         if check_auth is True:
-            user: Users = get_current_user()
+            user: Users = current_user
             if food.userID != user.id: raise(NotPermissionException("Not permission"))
 
 

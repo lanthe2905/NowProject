@@ -2,11 +2,12 @@
 
 from flask_restx import Resource
 from flask import request
-import inspect
 from flask_jwt_extended import jwt_required
 from ..util.helpers import _success, _throw
-from app.service.food_promotion_service import FoodPromotionService
-from app.dto.food_promotion_dto import FoodPlaceDto
+from ..util.middleware import verify_access_token
+from ..service.food_promotion_service import FoodPromotionService
+from ..dto.food_promotion_dto import FoodPlaceDto
+import inspect
 
 api = FoodPlaceDto.api
 _food_promotion_field = FoodPlaceDto.food_promotion_fields
@@ -24,7 +25,7 @@ class CreatePromotion(Resource):
 @api.route('/update/<id>')
 @api.expect(_food_promotion_field)
 class UpdatePromotion(Resource):
-    @jwt_required()
+    @verify_access_token
     def post(self, id):
         try:
             payload = request.get_json()
@@ -34,7 +35,7 @@ class UpdatePromotion(Resource):
 
 @api.route('/delete/<id>')
 class DeletePromotion(Resource):
-    @jwt_required()
+    @verify_access_token
     def get(self, id):
         try:
             return _success(inspect.stack(), FoodPromotionService.delete_by_id(id))

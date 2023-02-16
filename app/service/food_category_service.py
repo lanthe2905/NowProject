@@ -3,7 +3,7 @@ from app.model.db import foodCategoryLangsCollection,foodCategoriesCollection, f
 from bson.objectid import ObjectId
 from app.util.helpers import _throw
 from app.util.exception import  NotPermissionException
-from app.util.jwt import get_current_user
+from flask_jwt_extended import current_user
 class FoodCategoryService: 
 
     @staticmethod

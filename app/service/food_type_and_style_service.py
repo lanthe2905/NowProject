@@ -1,7 +1,7 @@
 from app.model.db import  foodTypeAndStylesCollection, foodPlacesCollection
 from app.model.model import FoodTypeAndStyles, FoodTypeAndStyleLangs, FoodPlaces, Users
 from app.service.food_type_and_style_lang_service import FoodTypeAndStyleLangService
-from app.util.jwt import get_current_user
+from flask_jwt_extended import current_user
 from flask import request
 from bson import ObjectId
 class FoodTypeAndStyleService:
@@ -111,5 +111,5 @@ class FoodTypeAndStyleService:
                 raise Exception("error..")
 
             food_place = FoodPlaces(**food_place)
-            user: Users = get_current_user()
+            user: Users = current_user
             if food_place.userID != user.id: raise(Exception("assert food type error.."))
