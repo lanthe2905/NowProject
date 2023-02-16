@@ -60,15 +60,16 @@ class RefreshToken(Resource):
         user = UserService.get_by_id(payload['user_id'])
         if user is None: 
             return {"message": "Token not valid", "status": 403}, 200
-            
+        refresh_token = request.get_json()['refresh_token']
         user['_id'] = str(user['_id'])
-        refresh_token_redis = jwt_redis_blocklist.get(user)
+        refresh_token_redis = jwt_redis_blocklist.get(user['_id'] )
+
         if refresh_token_redis != refresh_token:
             return {"message": "Token not valid", "status": 403}, 200
-
-        access_token = create_access_token(payload={"user_id": user['_id']})
+        
         refresh_token = create_refresh_token(payload={"user_id": user['_id']})
-        jwt_redis_blocklist.setex(user['_id'], refresh_token, time= timedelta(days= Const.JWT_CONFIG.REFRESH_EXPIRES_TIME_D))
+        access_token = create_access_token(payload={"user_id": user['_id']})
+        jwt_redis_blocklist.setex(name=user['_id'],value= refresh_token, time= timedelta(days= Const.JWT_CONFIG.REFRESH_EXPIRES_TIME_D))
         
         return {"status": 200, "access_token": access_token, "refresh_token": refresh_token}
 
