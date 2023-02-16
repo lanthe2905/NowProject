@@ -147,11 +147,19 @@ class FoodTypeAndStyleLangs(GenericModel):
 
 class FoodPromotion(GenericModel):
     id: Optional[PydanticObjectId] = Field(None, alias="_id")
-    foodPLaceID: PydanticObjectId
+    foodPlaceID: PydanticObjectId
     foodPromotionCode: str 
     expireAt: datetime = Field(default_factory=datetime.utcnow)
     createTime: datetime = Field(default_factory=datetime.utcnow)
 
+class FoodPromotionLangs(GenericModel):
+    id: Optional[PydanticObjectId] = Field(None, alias= "_id")
+    foodPromotionID: PydanticObjectId
+    title: Optional[str]
+    content: Optional[str]
+    lang: str
+    createTime: datetime = Field(default_factory=datetime.utcnow)
+    
 class FoodReviews(GenericModel):
     id: Optional[PydanticObjectId] = Field(None, alias="_id")
     foodPlaceID: PydanticObjectId

@@ -2,12 +2,12 @@
 
 from flask_restx import Resource
 from flask import request
-import inspect
-from flask_jwt_extended import jwt_required
 from ..util.helpers import _success, _throw
-from  ..service.food_service import FoodPlaceService
-from app.dto.food_category import FoodCategoryDto
-from app.service.food_category_service import FoodCategoryService
+from ..service.food_service import FoodPlaceService
+from ..service.food_category_service import FoodCategoryService
+from ..dto.food_category import FoodCategoryDto
+from ..util.middleware import verify_access_token
+import inspect
 
 api = FoodCategoryDto.api
 _category_create_field = FoodCategoryDto.category_create_form
@@ -27,7 +27,7 @@ class CreateCategory(Resource):
 @api.route('/update')
 @api.expect(FoodCategoryDto.category_update_form)
 class UpdateCategory(Resource):
-    @jwt_required()
+    @verify_access_token
     def post(self):
         try:
             payload = request.get_json()
@@ -36,9 +36,8 @@ class UpdateCategory(Resource):
             _throw(e)   
 
 @api.route('/delete/<id>')
-@api.doc(security="Bearer")
 class DeleteCategory(Resource):
-    @jwt_required()
+    @verify_access_token
     def get(self, id):
         try:
             return _success(inspect.stack(), FoodCategoryService.delete_by_id(id))

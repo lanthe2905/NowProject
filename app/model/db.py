@@ -19,6 +19,7 @@ foodSocialNetworkCollection = db.foodSocialNetworks
 foodTypeAndStyleLangsCollection = db.foodTypeAndStyleLangs
 foodTypeAndStylesCollection = db.foodTypeAndStyles
 foodPromotionsCollection = db.foodPromotions
+foodPromotionLangsCollection = db.foodPromotionLangs
 foodReviewsCollection = db.foodPreviews
 foodReviewReportsCollection = db.foodReviewReports
 

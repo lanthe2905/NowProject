@@ -1,7 +1,7 @@
 from app.model.db import foodPlacesCollection
 from app.model.model import FoodPlaces, Users
 from bson.objectid import ObjectId
-from app.util.jwt import get_current_user
+from flask_jwt_extended import current_user
 from app.util.exception import NotPermissionException
 from app.service.food_type_and_style_service import FoodTypeAndStyleService
 from app.service.food_category_service import FoodCategoryService
@@ -53,7 +53,7 @@ class FoodPlaceService:
                             },
                             {"$project": {"_id": 0, "categoryName": 1,"lang": 1}}
                         ],
-                        "as": "categoryLangs"
+                        "as": "langs"
                     }},
                     {"$project": {"_id": 1, "categoryLangs": 1}}
                 ],
@@ -93,6 +93,41 @@ class FoodPlaceService:
                     ],
                     "as": "foodTypeAndStyles"
                 }
+            },
+            {
+                "$lookup": {
+                    "from": "foodPromotions",
+                    "let": {"foodPlaceID": "$_id"},
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr": {
+                                    "$eq": ["$foodPlaceID", "$$foodPlaceID"]
+                                }
+                            }
+                        },
+                        {
+                            "$lookup": {
+                                "from": "foodPromotionLangs",
+                                "let": {"promotionID": "$_id"},
+                                "pipeline": [
+                                    {
+                                        "$match": {
+                                            "$expr": {
+                                                "$and": [
+                                                    {"$eq": ["$foodPromotionID", "$$promotionID"]}
+                                                ]
+                                                
+                                            }
+                                        }
+                                    }
+                                ],
+                                "as": "langs"
+                            }
+                        }
+                    ],
+                    "as": "promotions"
+                }
             }
 
 
@@ -106,9 +141,9 @@ class FoodPlaceService:
 
         food = FoodPlaces(**payload)
 
-        inserted_id = foodPlacesCollection.insert_one(food.to_bson())
-        if inserted_id is None: return {"message": "Create not successfully", "code": 204}
-        return {"message": "create success", "data": FoodPlaceService.get_by_id(inserted_id), "code": 200}
+        result = foodPlacesCollection.insert_one(food.to_bson())
+        if result.inserted_id is None: return {"message": "Create not successfully", "status": 204}
+        return {"message": "create success", "data": FoodPlaceService.get_by_id(result.inserted_id), "status": 200}
 
 
     @staticmethod
@@ -131,9 +166,9 @@ class FoodPlaceService:
                 if "_id" in category: FoodCategoryService.delete_by_id(category['_id'])
         
         result = foodPlacesCollection.delete_one({"_id": ObjectId(id) })
-        if result.deleted_count == 0: return {"message": "delete not success!", "code": 204}
+        if result.deleted_count == 0: return {"message": "delete not success!", "status": 204}
         
-        return {"message": "delete success", "code": 200}
+        return {"message": "delete success", "status": 200}
 
 
     @staticmethod
@@ -154,7 +189,7 @@ class FoodPlaceService:
         if food is None or food.id is None: raise(Exception("can't find food place"))
 
         if check_auth is True:
-            user: Users = get_current_user()
+            user: Users = current_user
             if food.userID != user.id: raise(NotPermissionException("Not permission"))
 
 

@@ -7,7 +7,6 @@ from flask_jwt_extended import JWTManager
 from app import create_app, blueprint
 from app.service.user_service import UserService
 from app.util.i18n import run as translate, beforeRequest as i18nBeforeRequest
-import app.util.jwt
 
 app = create_app(__name__)
 jwt = JWTManager(app)
@@ -20,7 +19,7 @@ def before_request():
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
-    user = UserService.get_by_user_name(identity.get('username'))
+    user = UserService.get_by_id(identity)
     return user 
 
 if __name__ == '__main__':  

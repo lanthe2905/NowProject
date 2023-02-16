@@ -1,15 +1,14 @@
 
 
-from app.dto.food_place_dto import FoodPlaceDto
-from flask_restx import Resource
+from ..dto.food_place_dto import FoodPlaceDto
 from  ..service.food_service import FoodPlaceService
 from ..util.helpers import _success, _throw
-from flask import request, make_response
+from ..util.middleware import cookie_required, verify_access_token
+from ..util.file import save_file_local, remove_file
+from ..model.model import FoodPlaces
+from flask import request
+from flask_restx import Resource
 import inspect
-from flask_jwt_extended import jwt_required
-from app.util.middleware import cookie_required
-from app.util.file import save_file_local, remove_file
-from app.model.model import FoodPlaces
 api = FoodPlaceDto.api
 _foodFields= FoodPlaceDto.food_place_fields
 
@@ -26,7 +25,7 @@ class FoodPlace(Resource):
 @api.route('/update/<id>')
 class FoodPlaceUpdate(Resource):
     @api.expect(_foodFields)
-    @jwt_required()
+    @verify_access_token
     @cookie_required
     def post(self, id):
         try:
@@ -50,7 +49,7 @@ class FoodPlaceList(Resource):
 @api.route("/create")
 @api.expect(_foodFields)
 class FoodCreate(Resource):
-    @jwt_required()
+    @verify_access_token
     def post(self):
             payload = request.get_json()
             return _success(inspect.stack(),  FoodPlaceService.create(payload))
@@ -58,7 +57,7 @@ class FoodCreate(Resource):
 
 @api.route('/delete/<id>')
 class FoodDelete(Resource):
-    @jwt_required()
+    @verify_access_token
     def delete(self, id):
         try:
             return _success(inspect.stack(), FoodPlaceService.delete_by_id(id))
@@ -67,7 +66,7 @@ class FoodDelete(Resource):
 
 @api.route("/upload/<id>")
 class UploadImageFoodPlace(Resource):
-    @jwt_required()
+    @verify_access_token
     def post(self, id):
         try:
             food_place = FoodPlaceService.get_by_id(id= id)
@@ -87,7 +86,7 @@ class UploadImageFoodPlace(Resource):
     
 @api.route("/remove_file/<food_id>")
 class RemoveFile(Resource):
-    @jwt_required()
+    @verify_access_token
     def get(self, food_id):
         try:
             name = request.form.get("image_name")

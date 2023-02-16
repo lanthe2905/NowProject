@@ -3,7 +3,7 @@ from flask import request
 from app.util.helpers import  _success, _throw, _validation_exception
 from app.dto.food_type_style_dto import FoodTypeAndStyleDto
 from app.service.food_type_and_style_service import FoodTypeAndStyleService
-from app.util.middleware import cookie_required
+from app.util.middleware import cookie_required, verify_access_token
 from flask_jwt_extended import jwt_required
 from pydantic import ValidationError
 import inspect
@@ -25,7 +25,7 @@ class GetFoodTypeAndStyleController(Resource):
 class FoodTypeAndStyleController(Resource):
     @api.expect(_foodTypeAndStyleField)
     @cookie_required
-    @jwt_required()
+    @verify_access_token
     def post(self):
         try:
             payload = request.get_json()
@@ -37,7 +37,7 @@ class FoodTypeAndStyleController(Resource):
 
 @api.route('/update/<id>')
 class FoodTypeAndStyleUpdate(Resource):
-    @jwt_required()
+    @verify_access_token
     @api.expect(_foodTypeAndStyleField)
     def post(self, id):
         try:
@@ -51,7 +51,7 @@ class FoodTypeAndStyleUpdate(Resource):
 
 @api.route('/delete/<id>')
 class DeleteFoodTypeAndStyle(Resource):
-    @jwt_required()
+    @verify_access_token
     def get(self, id):
         try:
             return _success(inspect.stack(), FoodTypeAndStyleService.delete(id))

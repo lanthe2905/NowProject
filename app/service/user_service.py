@@ -1,9 +1,12 @@
 from app.model.db import userCollection
 from app.model.model import Users
 from ..util.helpers import _throw
-from app.util.jwt import create_token
+from ..util.redis import jwt_redis_blocklist
+from ..util.const import Const
+from ..util.jwt import create_access_token, create_refresh_token
 from bson.objectid import ObjectId
 import bcrypt
+from datetime import timedelta
 class UserService:
     def __init__(self) -> None:
         pass
@@ -30,9 +33,16 @@ class UserService:
      
         if user is None or UserService.check_password(password, user.password) == False:
             _throw(Exception('please check your username or password'))
+        access_token = create_access_token(payload= {"user_id": str(user.id)})
+        refresh_token = create_refresh_token(payload= {"user_id": str(user.id)})
 
-        access_token = create_token(dict(username= user.username, email=user.email))
-        return {"access_token": access_token}
+        has_refresh_token = jwt_redis_blocklist.get(name=str(user.id))
+
+        if has_refresh_token == None:
+            jwt_redis_blocklist.setex(name=str(user.id),value= refresh_token,time= timedelta(days= Const.JWT_CONFIG.REFRESH_EXPIRES_TIME_D))
+            return { "status": 200 ,"access_token": access_token, "refresh_token": refresh_token}
+            
+        return { "status": 200 ,"access_token": access_token, "refresh_token": has_refresh_token}
 
     @staticmethod
     def register(data):
@@ -40,9 +50,11 @@ class UserService:
             user = Users(**data)
             user.password = UserService.get_hashed_password(user.password)
             userCollection.insert_one(user.to_bson())
-            access_token = create_token(dict(username= user.username, email=user.email))
-
-            return {"message":"Register success" ,"access_token": access_token}
+            access_token = create_access_token(payload= {"user_id": user.id})
+            refresh_token = create_refresh_token(payload= {"user_id": user.id})
+            jwt_redis_blocklist.setex(name=str(user.id),value= refresh_token,time= timedelta(days= Const.JWT_CONFIG.REFRESH_EXPIRES_TIME_D))  
+            
+            return { "status": 200 ,"access_token": access_token, "refresh_token": refresh_token}
         except Exception as e:
             _throw(e)
 

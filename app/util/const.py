@@ -78,4 +78,8 @@ class Const:
         ZOOM = '3'
 
     class JWT_CONFIG:
-        SECRET_KEY = "now-project-key"
+        SECRET_KEY = "AVPyTXUZntKOR1DxIlr4"
+        REFRESH_KEY= "PoyDIG8Ck0TcdpveH9Ba"
+        REFRESH_EXPIRES_TIME_D = 2
+        SECRET_KEY_TIME_M = 15
+        
